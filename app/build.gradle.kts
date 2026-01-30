@@ -140,16 +140,15 @@ android {
  * =====================================================
  */
 dependencies {
-    
+
     implementation(project(":core"))
 
     implementation(platform(libs.androidx.compose.bom))
 
-    implementation(libs.bundles.core)
     implementation(libs.bundles.compose.core)
+    implementation(libs.bundles.compose.material3)
+    implementation(libs.bundles.compose.lifecycle)
 
-    // Dùng material3
-    // implementation(libs.bundles.compose.material3)
 
     implementation(libs.bundles.compose.preview)
     debugImplementation(libs.bundles.compose.debug)
