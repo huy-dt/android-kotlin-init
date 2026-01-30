@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 
-    // Khi dùng Hilt thì mở 2 dòng này
+    // Khi dùng Hilt
     // alias(libs.plugins.hilt)
     // alias(libs.plugins.kotlin.kapt)
 }
@@ -18,6 +18,9 @@ val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) {
         file.inputStream().use { load(it) }
+        logger.lifecycle("local.properties loaded from ${file.absolutePath}")
+    } else {
+        logger.lifecycle("local.properties NOT FOUND at ${file.absolutePath}")
     }
 }
 
@@ -47,18 +50,14 @@ android {
 
     /**
      * =====================================================
-     * SIGNING CONFIG (RELEASE)
-     * LẤY DATA TỪ local.properties
+     * SIGNING CONFIG
+     * → CHỈ TẠO KHI CÓ KEYSTORE
      * =====================================================
      */
     signingConfigs {
-        create("release") {
-
-            val storeFilePath = prop("RELEASE_STORE_FILE")
-
-            // Chỉ config khi có local.properties
-            if (storeFilePath != null) {
-                storeFile = file(storeFilePath)
+        prop("RELEASE_STORE_FILE")?.let { storePath ->
+            create("release") {
+                storeFile = rootProject.file(storePath)
                 storePassword = prop("RELEASE_STORE_PASSWORD")
                 keyAlias = prop("RELEASE_KEY_ALIAS")
                 keyPassword = prop("RELEASE_KEY_PASSWORD")
@@ -72,21 +71,13 @@ android {
      * =====================================================
      */
     buildTypes {
+
         getByName("release") {
             isMinifyEnabled = true
 
-            signingConfigs {
-
-                val storeFilePath = prop("RELEASE_STORE_FILE")
-
-                if (storeFilePath != null) {
-                    create("release") {
-                        storeFile = file(storeFilePath)
-                        storePassword = prop("RELEASE_STORE_PASSWORD")
-                        keyAlias = prop("RELEASE_KEY_ALIAS")
-                        keyPassword = prop("RELEASE_KEY_PASSWORD")
-                    }
-                }
+            // ✅ CHỈ SIGN KHI SIGNING CONFIG TỒN TẠI
+            signingConfigs.findByName("release")?.let {
+                signingConfig = it
             }
 
             proguardFiles(
@@ -110,7 +101,6 @@ android {
     }
 
     composeOptions {
-        // Phù hợp Kotlin 1.9.22
         kotlinCompilerExtensionVersion = "1.5.10"
     }
 
